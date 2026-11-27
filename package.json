@@ -1,0 +1,13 @@
+{
+  "name": "ytunes",
+  "version": "2.1.0",
+  "private": true,
+  "type": "module",
+  "description": "YouTube-powered music discovery and official embedded playback",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

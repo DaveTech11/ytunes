@@ -1,0 +1,51 @@
+diff -ruN a/public/sw.js b/public/sw.js
+--- a/public/sw.js	2026-11-12 05:10:03.844507208 +0000
++++ b/public/sw.js	2026-11-12 05:10:03.846359936 +0000
+@@ -17,7 +17,7 @@
+   if (req.method !== "GET") return;
+   const url = new URL(req.url);
+   if (url.origin !== self.location.origin) return;
+-  if (url.pathname.startsWith("/api/") || req.headers.has("range")) return;
++  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/listen") || req.headers.has("range")) return;
+ 
+   if (url.pathname.startsWith("/assets/")) {
+     event.respondWith((async () => {
+diff -ruN a/server.mjs b/server.mjs
+--- a/server.mjs	2026-11-12 05:10:03.843520106 +0000
++++ b/server.mjs	2026-11-12 05:10:03.845390735 +0000
+@@ -36,6 +36,7 @@
+ import {parseGithubUrl,fetchGithub} from './githubFetch.mjs';
+ import {buildPlanPrompt,parsePlan} from './videoPlan.mjs';
+ import {musicSearch,musicTrending,musicTrack,streamUpstream,generateSong,lyriaConfigured} from './music.mjs';
++import {createListen} from './listen/site.mjs'; // the standalone music website, served at /listen
+ import { smtpConfigured, sendSmtp } from './smtp.mjs';
+ import { generateVapidKeys, sendPush, isAllowedEndpoint } from './push.mjs';
+ import { guard as antiScrape, clientIp as realIp, strike as antiStrike, antiscrapeStatus, unban as antiUnban } from './antiscrape.mjs';
+@@ -1413,6 +1414,19 @@
+   }finally{clearInterval(typing);save().catch(()=>{})}
+ }
+ 
++// ---------- Music website at /listen (code lives in ./listen). Uses Xyron accounts + Xyron's Google sign-in. ----------
++// Deploying this server deploys the music site too. The same ./listen folder also runs alone (see listen/README.md).
++const listenSite=createListen({
++  base:'/listen',
++  secret:()=>process.env.STREAM_SECRET||animeSecret(),
++  requireLogin:true,
++  googleConfigured:()=>Boolean(process.env.GOOGLE_CLIENT_ID&&process.env.GOOGLE_CLIENT_SECRET),
++  googleStart:(req,res)=>{res.writeHead(302,{Location:'/api/auth/google?returnTo='+encodeURIComponent('/listen/')});res.end()},
++  otherLoginUrl:'/login?returnTo='+encodeURIComponent('/listen/'),
++  logout:async(req,res)=>{const sid=parseCookies(req).xyron_session;db.sessions=db.sessions.filter(x=>x.id!==sid);await save();cookie(res,'xyron_session','',0)},
++  ip:req=>clientIp(req),
++});
++
+ async function route(req,res){
+  if(!String(req.url||'').startsWith('/api/bots/hook/')&&!rate(req))return send(res,429,{message:'Too many requests. Try again shortly.'},{'Retry-After':'60'});
+  { let pp='';try{pp=new URL(req.url,'http://x').pathname}catch{} if(!strictRate(req,pp,req.method))return send(res,429,{message:'Too many attempts. Please wait a minute and try again.'},{'Retry-After':'60'}) }
+@@ -1592,6 +1606,7 @@
+    res.writeHead(200,{'Content-Type':hostMime(f.path),'Cache-Control':'public, max-age=30','X-Content-Type-Options':'nosniff','Content-Security-Policy':'sandbox allow-scripts allow-forms allow-popups allow-modals','Referrer-Policy':'no-referrer'});
+    return res.end(method==='HEAD'?undefined:f.content);
+  }
++  if((p==='/listen'||p.startsWith('/listen/'))&&await listenSite({req,res,u,p,method,me}))return; // music website
+  if((method==='GET'||method==='HEAD')&&!p.startsWith('/api/'))return serveStatic(req,res,p);
+  if(p==='/api/auth/register'&&method==='POST')return send(res,410,{message:'Password sign-up is closed. Sign up with an email code.'});
+  if(p==='/api/auth/login'&&method==='POST'){

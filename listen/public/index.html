@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Ytunes — Music discovery and playback</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="main">
+    <div class="top">
+      <form id="searchForm" class="search" autocomplete="off">
+        <span class="search-ico" id="icoSearch"></span>
+        <input id="q" type="search" maxlength="80" enterkeyhint="search" placeholder="Search any song or artist" aria-label="Search music">
+        <button type="button" id="clearQ" class="clear" aria-label="Clear search" hidden></button>
+      </form>
+    </div>
+    <div id="view"></div>
+  </main>
+
+  <div id="mini" class="mini" hidden>
+    <button type="button" id="miniOpen" class="mini-open" aria-label="Open player">
+      <span id="miniCover" class="cover" style="width:44px;height:44px"></span>
+      <span class="mini-text"><b id="miniTitle"></b><small id="miniArtist"></small></span>
+    </button>
+    <button type="button" id="miniToggle" class="btn-round white" aria-label="Play or pause"></button>
+    <button type="button" id="miniNext" class="btn-round dim" aria-label="Next song"></button>
+    <div class="mini-bar"><i id="miniProg"></i></div>
+  </div>
+
+  <nav class="tabs" aria-label="Main">
+    <div class="tabs-in">
+      <button type="button" data-tab="home" class="tab on"><span class="ti" data-ico="home"></span><span class="tl">Home</span></button>
+      <button type="button" data-tab="explore" class="tab"><span class="ti">✦</span><span class="tl">Explore</span></button>
+      <button type="button" data-tab="library" class="tab"><span class="ti" data-ico="lib"></span><span class="tl">Library</span></button>
+      <button type="button" data-tab="profile" class="tab"><span class="ti" data-ico="profile"></span><span class="tl">Profile</span></button>
+      <button type="button" data-tab="settings" class="tab"><span class="ti" data-ico="settings"></span><span class="tl">Settings</span></button>
+      <button type="button" data-tab="admin" class="tab" id="adminTab" hidden><span class="ti" data-ico="admin"></span><span class="tl">Admin</span></button>
+    </div>
+  </nav>
+
+  <section id="np" class="np" hidden>
+    <div id="npBlur" class="np-blur"></div>
+    <div class="np-in">
+      <div class="np-head">
+        <button type="button" id="npClose" class="circle" aria-label="Minimise player"></button>
+        <span>Now Playing</span>
+        <button type="button" id="npStop" class="circle" aria-label="Stop and close player"></button>
+      </div>
+      <div id="npBody" class="np-body"></div>
+      <div class="np-info">
+        <div class="np-text"><small id="npArtist"></small><h2 id="npTitle"></h2><em id="npSrc"></em></div>
+        <button type="button" id="npLike" class="circle" aria-label="Like"></button>
+      </div>
+      <div id="wave" class="wave" role="slider" aria-label="Seek" tabindex="0"></div>
+      <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+      <div class="ctrl">
+        <button type="button" id="cRepeat" class="plain" aria-label="Repeat"></button>
+        <button type="button" id="cPrev" class="plain big" aria-label="Previous song"></button>
+        <button type="button" id="cPlay" class="play" aria-label="Play or pause"></button>
+        <button type="button" id="cNext" class="plain big" aria-label="Next song"></button>
+        <button type="button" id="cQueue" class="plain" aria-label="Show queue"></button>
+      </div>
+      <button type="button" id="cShuffle" class="shuffle"></button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
